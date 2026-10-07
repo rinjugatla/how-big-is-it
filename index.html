@@ -19,35 +19,41 @@
 <div class="app">
   <aside class="panel">
     <div class="title-row">
-      <h1>📦 サイズ体感ビューア</h1>
-      <button id="collapse" type="button" class="icon-btn" aria-label="サイドバーをたたむ" title="サイドバーをたたむ">«</button>
+      <h1>📦 <span data-i18n="title">サイズ体感ビューア</span></h1>
+      <div class="title-actions">
+        <div class="lang" role="group" aria-label="言語" data-i18n-attr="aria-label:langLabel">
+          <button type="button" data-lang="ja" lang="ja" aria-label="日本語" title="日本語" aria-pressed="true"><svg viewBox="0 0 30 20" aria-hidden="true"><rect width="30" height="20" fill="#fff"/><circle cx="15" cy="10" r="6" fill="#bc002d"/></svg></button>
+          <button type="button" data-lang="en" lang="en" aria-label="English" title="English" aria-pressed="false"><svg viewBox="0 0 60 40" aria-hidden="true"><rect width="60" height="40" fill="#012169"/><path d="M0 0L60 40M60 0L0 40" stroke="#fff" stroke-width="8"/><path d="M0 0L60 40M60 0L0 40" stroke="#c8102e" stroke-width="3"/><path d="M30 0V40M0 20H60" stroke="#fff" stroke-width="13"/><path d="M30 0V40M0 20H60" stroke="#c8102e" stroke-width="8"/></svg></button>
+        </div>
+        <button id="collapse" type="button" class="icon-btn" aria-label="サイドバーをたたむ" title="サイドバーをたたむ" data-i18n-attr="aria-label:collapse;title:collapse">«</button>
+      </div>
     </div>
-    <p class="lead">寸法を入れると3Dの箱が現れ、身近なものと並べて大きさを確かめられます。</p>
+    <p class="lead" data-i18n="lead">寸法を入れると3Dの箱が現れ、身近なものと並べて大きさを確かめられます。</p>
 
     <section class="inputs">
       <div id="boxes"></div>
-      <button id="add-box" type="button" class="add">＋ 箱を追加</button>
+      <button id="add-box" type="button" class="add" data-i18n="addBox">＋ 箱を追加</button>
       <p id="error" class="error" hidden></p>
     </section>
 
     <section class="rotbar viewbar">
-      <label class="sw"><span>寸法を表示</span><input id="dims" type="checkbox" role="switch" checked><i></i></label>
-      <label class="sw"><span>自動で回す</span><input id="rotate" type="checkbox" role="switch"><i></i></label>
-      <label class="sw"><span>近いものを自動選択</span><input id="auto" type="checkbox" role="switch" checked><i></i></label>
+      <label class="sw"><span data-i18n="showDims">寸法を表示</span><input id="dims" type="checkbox" role="switch" checked><i></i></label>
+      <label class="sw"><span data-i18n="autoRotate">自動で回す</span><input id="rotate" type="checkbox" role="switch"><i></i></label>
+      <label class="sw"><span data-i18n="autoSelect">近いものを自動選択</span><input id="auto" type="checkbox" role="switch" checked><i></i></label>
       <div class="rot-btns">
-        <button id="fit" type="button">全体を表示</button>
-        <button id="reset" type="button">配置をリセット</button>
-        <button id="share" type="button">🔗 共有URLをコピー</button>
+        <button id="fit" type="button" data-i18n="fit">全体を表示</button>
+        <button id="reset" type="button" data-i18n="resetLayout">配置をリセット</button>
+        <button id="share" type="button" data-i18n="share">🔗 共有URLをコピー</button>
       </div>
     </section>
 
     <section class="rotbar">
-      <div class="rot-title">選択中: <b id="active-name">-</b><span class="rot-note">（3D上でクリックして選択）</span></div>
+      <div class="rot-title"><span data-i18n="selected">選択中:</span> <b id="active-name">-</b><span class="rot-note" data-i18n="selectHint">（3D上でクリックして選択）</span></div>
       <div class="rot-btns">
-        <button type="button" data-rot="yaw">↻ 水平に90°</button>
-        <button type="button" data-rot="pitch">⤵ 前後に90°倒す</button>
-        <button type="button" data-rot="roll">⤴ 左右に90°倒す</button>
-        <button type="button" data-rot="reset">元に戻す</button>
+        <button type="button" data-rot="yaw" data-i18n="rotYaw">↻ 水平に90°</button>
+        <button type="button" data-rot="pitch" data-i18n="rotPitch">⤵ 前後に90°倒す</button>
+        <button type="button" data-rot="roll" data-i18n="rotRoll">⤴ 左右に90°倒す</button>
+        <button type="button" data-rot="reset" data-i18n="rotReset">元に戻す</button>
       </div>
     </section>
 
@@ -55,16 +61,16 @@
 
     <section>
       <div class="list-head">
-        <h2>比べるもの</h2>
+        <h2 data-i18n="compare">比べるもの</h2>
       </div>
       <div id="chips"></div>
     </section>
 
-    <p class="hint">右ドラッグ: 回転 ／ ホイール(中ボタン)ドラッグ・2本指: 移動 ／ ホイール回転・ピンチ: 拡大縮小 ／ 左ドラッグ: 物を床の上で動かす</p>
+    <p class="hint" data-i18n="hint">右ドラッグ: 回転 ／ ホイール(中ボタン)ドラッグ・2本指: 移動 ／ ホイール回転・ピンチ: 拡大縮小 ／ 左ドラッグ: 物を床の上で動かす</p>
   </aside>
 
   <main class="stage" id="stage">
-    <button id="expand" type="button" class="icon-btn expand" aria-label="サイドバーを開く" title="サイドバーを開く" hidden>☰</button>
+    <button id="expand" type="button" class="icon-btn expand" aria-label="サイドバーを開く" title="サイドバーを開く" data-i18n-attr="aria-label:expand;title:expand" hidden>☰</button>
     <div class="grid-note" id="grid-note"></div>
   </main>
 </div>

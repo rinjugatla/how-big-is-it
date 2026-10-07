@@ -13,4 +13,8 @@ ES Modules を使うため `file://` では動きません。
     python -m http.server 8000
 
 ## 比較対象の追加
-`objects.js` に `{ id, name, type, dims: [横, 高さ, 奥行](mm), color }` を追加してください。
+`objects.js` に `{ id, size, names: { ja, en }, type, dims: [横, 高さ, 奥行](mm), color }` を追加してください。
+
+## 多言語対応
+日本語（既定）と英語に対応しています。サイドバー右上の国旗ボタンで切り替えられ、選択は `localStorage` と共有URLに保存されます。
+`?lang=en` のように URL で指定することもできます。文言は `i18n.js` の `DICT` に追加します。

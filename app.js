@@ -3,6 +3,7 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { OBJECTS } from './objects.js';
+import { t, nameOf, getLang, setLang, isLang, detectLang, saveLang, applyStatic } from './i18n.js';
 
 const UNIT_MM = { mm: 1, cm: 10, m: 1000 };
 const BOX_COLORS = [0xff7a1a, 0x2f80ed, 0x27ae60, 0x9b59b6, 0xe74c3c, 0x16a085];
@@ -10,9 +11,9 @@ const hex = (n) => '#' + n.toString(16).padStart(6, '0');
 const $ = (id) => document.getElementById(id);
 
 const SIZE_GROUPS = [
-  { key: 's', label: '小', note: '手で持てる' },
-  { key: 'm', label: '中', note: '家電・カバン' },
-  { key: 'l', label: '大', note: '家具・人・車' },
+  { key: 's', label: 'groupS', note: 'groupSNote' },
+  { key: 'm', label: 'groupM', note: 'groupMNote' },
+  { key: 'l', label: 'groupL', note: 'groupLNote' },
 ];
 let syncTimer = null;
 const state = { groupOpen: {}, boxes: [], nextBox: 0, auto: true, selected: new Set(), pos: {}, rot: {}, active: null, items: [] };
@@ -70,20 +71,28 @@ function parseQuickSize(text) {
 function addBox(init = {}) {
   const idx = init.idx ?? state.nextBox;
   state.nextBox = Math.max(state.nextBox, idx + 1);
-  const defName = `箱${String.fromCharCode(65 + (idx % 26))}`;
-  const b = { id: `box${idx}`, name: defName, color: BOX_COLORS[idx % BOX_COLORS.length] };
+  const letter = String.fromCharCode(65 + (idx % 26));
+  let defName = t('boxDefault', letter);
+  const b = { id: `box${idx}`, name: defName, color: BOX_COLORS[idx % BOX_COLORS.length], letter };
+  // 言語切替時、名前が既定名のままなら新しい言語の既定名に差し替える
+  b.relocalize = () => {
+    const input = card.querySelector('[data-name]'), next = t('boxDefault', letter);
+    if (input.value.trim() === '' || input.value === defName) { input.value = next; b.name = next; }
+    defName = next;
+  };
   state.boxes.push(b);
   const card = document.createElement('div');
   card.className = 'boxcard';
   card.id = `box-${b.id}`;
   card.style.setProperty('--c', hex(b.color));
-  const row = (k, label, val) => `<div class="row"><label>${label}</label>
+  const tx = (key) => `data-i18n="${key}">${esc(t(key))}`;
+  const row = (k, key, val) => `<div class="row"><label ${tx(key)}</label>
     <input data-k="${k}" type="number" inputmode="decimal" min="0" step="any" value="${val}">
 </div>`;
-  card.innerHTML = `<div class="boxhead"><input data-name class="name" type="text" maxlength="20" value="${defName}" aria-label="箱の名前"><span class="unit">単位 <select data-unit><option>mm</option><option selected>cm</option><option>m</option></select></span><button type="button" data-del>削除</button></div>` +
-    '<div class="seg" role="group" aria-label="入力方法"><button type="button" data-mode="each">個別に入力</button><button type="button" data-mode="quick">まとめて入力</button></div>' +
-    '<div data-quick-wrap hidden><div class="row quick"><label>サイズ</label><input data-quick type="text" autocomplete="off" placeholder="107x27x52（縦x横x高さ）"></div><p class="quick-err" data-quick-err hidden>「107x27x52」の形式で入力してください</p></div>' +
-    '<div data-each-wrap>' + row('d', '縦（奥行）', +init.d || 30) + row('w', '横（幅）', +init.w || 20) + row('h', '高さ', +init.h || 10) + '</div>';
+  card.innerHTML = `<div class="boxhead"><input data-name class="name" type="text" maxlength="20" value="${esc(defName)}" data-i18n-attr="aria-label:boxNameLabel" aria-label="${esc(t('boxNameLabel'))}"><span class="unit"><span ${tx('unit')}</span> <select data-unit><option>mm</option><option selected>cm</option><option>m</option></select></span><button type="button" data-del ${tx('del')}</button></div>` +
+    `<div class="seg" role="group" data-i18n-attr="aria-label:inputMode" aria-label="${esc(t('inputMode'))}"><button type="button" data-mode="each" ${tx('modeEach')}</button><button type="button" data-mode="quick" ${tx('modeQuick')}</button></div>` +
+    `<div data-quick-wrap hidden><div class="row quick"><label ${tx('size')}</label><input data-quick type="text" autocomplete="off" data-i18n-attr="placeholder:quickPlaceholder" placeholder="${esc(t('quickPlaceholder'))}"></div><p class="quick-err" data-quick-err hidden ${tx('quickErr')}</p></div>` +
+    '<div data-each-wrap>' + row('d', 'depth', +init.d || 30) + row('w', 'width', +init.w || 20) + row('h', 'height', +init.h || 10) + '</div>';
   // 共有URLからの復元値は HTML に埋め込まず、プロパティで設定する
   if (init.restore) {
     const r = init.restore;
@@ -307,16 +316,17 @@ function buildUserBox(box) {
   edges.position.y = h / 2;
   g.add(solid, edges);
 
-  const lw = makeLabel(`横 ${box.w.label}`, 'dim'); lw.position.set(0, 0, d / 2);
-  const ld = makeLabel(`縦 ${box.d.label}`, 'dim'); ld.position.set(w / 2, 0, 0);
-  const lh = makeLabel(`高さ ${box.h.label}`, 'dim'); lh.position.set(-w / 2, h / 2, d / 2);
+  const lw = makeLabel(`${t('lblW')} ${box.w.label}`, 'dim'); lw.position.set(0, 0, d / 2);
+  const ld = makeLabel(`${t('lblD')} ${box.d.label}`, 'dim'); ld.position.set(w / 2, 0, 0);
+  const lh = makeLabel(`${t('lblH')} ${box.h.label}`, 'dim'); lh.position.set(-w / 2, h / 2, d / 2);
   for (const l of [lw, ld, lh]) l.element.style.background = hex(box.color);
   g.add(lw, ld, lh);
   return g;
 }
 
 // ---------- シーン再構築 ----------
-let gridHelper = null;
+let gridHelper = null, gridStep = 0;
+const renderGridNote = () => { if (gridStep) $('grid-note').textContent = t('gridNote', fmtLen(gridStep * 1000)); };
 let content = new THREE.Group();
 scene.add(content);
 
@@ -337,7 +347,7 @@ function rebuildScene(boxes, refit) {
 
   const entries = boxes.map((b) => ({ id: b.id, name: b.name, color: b.color, group: buildUserBox(b) }));
   for (const o of OBJECTS) {
-    if (state.selected.has(o.id)) entries.push({ id: o.id, name: o.name, group: buildModel(o) });
+    if (state.selected.has(o.id)) entries.push({ id: o.id, name: nameOf(o), group: buildModel(o) });
   }
   if (!entries.some((e) => e.id === state.active)) state.active = entries[0].id;
 
@@ -402,7 +412,8 @@ function fitCamera() {
   gridHelper.material.transparent = true;
   gridHelper.material.opacity = 0.5;
   scene.add(gridHelper);
-  $('grid-note').textContent = `床の目盛り: 1マス = ${fmtLen(step * 1000)}`;
+  gridStep = step;
+  renderGridNote();
 }
 
 // ---------- 選択・回転 ----------
@@ -436,9 +447,9 @@ function renderList(boxes, ranks) {
     const top = ranks[i][0].o;
     const vol = boxVolume([box.w.mm, box.h.mm, box.d.mm]);
     const ratio = vol / boxVolume(top.dims);
-    const ratioText = ratio >= 1 ? `約 ${ratio.toFixed(ratio >= 10 ? 0 : 1)} 倍` : `約 1/${(1 / ratio).toFixed(1 / ratio >= 10 ? 0 : 1)}`;
-    return `<div><span style="color:${hex(box.color)}">■</span> ${esc(box.name)} <b>${fmtDims([box.w.mm, box.h.mm, box.d.mm])}</b>（${fmtVolume(vol)}）<br>` +
-      `いちばん近いのは <b>${top.name}</b>（体積 ${ratioText}）</div>`;
+    const ratioText = ratio >= 1 ? t('about', ratio.toFixed(ratio >= 10 ? 0 : 1)) : t('aboutFrac', (1 / ratio).toFixed(1 / ratio >= 10 ? 0 : 1));
+    return `<div><span style="color:${hex(box.color)}">■</span> ${esc(box.name)} <b>${fmtDims([box.w.mm, box.h.mm, box.d.mm])}</b> (${fmtVolume(vol)})<br>` +
+      `${esc(t('nearest'))} <b>${esc(nameOf(top))}</b> (${esc(t('volume'))} ${ratioText})</div>`;
   }).join('');
   const score = new Map(OBJECTS.map((o) => [o.id, Math.min(...ranks.map((r) => r.find((x) => x.o === o).s))]));
   const topIds = new Set(ranks.flatMap((r) => r.slice(0, 3).map((x) => x.o.id)));
@@ -450,7 +461,7 @@ function renderList(boxes, ranks) {
     const det = document.createElement('details');
     det.open = hasNear || state.groupOpen[g.key] === true;
     const sum = document.createElement('summary');
-    sum.innerHTML = `<b>${g.label}</b> <small>${g.note}（${items.length}）</small>`;
+    sum.innerHTML = `<b>${esc(t(g.label))}</b> <small>${esc(t(g.note))} (${items.length})</small>`;
     sum.addEventListener('click', () => { state.groupOpen[g.key] = !det.open; scheduleSync(); });
     det.append(sum);
     const ul = document.createElement('ul');
@@ -468,12 +479,12 @@ function renderList(boxes, ranks) {
         update({ refit: true, keepSelection: true });
       });
       const txt = document.createElement('span');
-      txt.innerHTML = `${o.name}<small>${fmtDims(o.dims)}</small>`;
+      txt.innerHTML = `${esc(nameOf(o))}<small>${fmtDims(o.dims)}</small>`;
       lab.append(cb, txt);
       if (topIds.has(o.id)) {
         const b = document.createElement('span');
         b.className = 'badge';
-        b.textContent = '近い';
+        b.textContent = t('near');
         lab.append(b);
       } else lab.append(document.createElement('span'));
       li.append(lab);
@@ -489,7 +500,7 @@ function update({ refit = true, keepSelection = false } = {}) {
   const err = $('error');
   if (!boxes) {
     err.hidden = false;
-    err.textContent = '縦・横・高さに 0 より大きい数値を入力してください。';
+    err.textContent = t('error');
     return;
   }
   err.hidden = true;
@@ -545,6 +556,7 @@ function serialize() {
   for (const [id, p] of Object.entries(state.pos)) if (ids.has(id)) pos[id] = [sig(p.x), sig(p.z)];
   return {
     v: 1,
+    l: getLang(),
     b: state.boxes.map((b) => {
       const card = $(`box-${b.id}`);
       const val = (k) => card.querySelector(`[data-k="${k}"]`).value;
@@ -636,13 +648,37 @@ async function copyShareUrl() {
     ta.remove();
   }
   const btn = $('share');
-  btn.textContent = ok ? '✓ コピーしました' : 'コピーに失敗しました';
-  setTimeout(() => { btn.textContent = '🔗 共有URLをコピー'; }, 1800);
+  btn.textContent = t(ok ? 'copied' : 'copyFailed');
+  setTimeout(() => { btn.textContent = t('share'); }, 1800);
 }
 $('share').addEventListener('click', copyShareUrl);
 
+// ---------- 言語切替 ----------
+function changeLang(l, { rerender = true } = {}) {
+  setLang(l);
+  saveLang();
+  markLang();
+  state.boxes.forEach((b) => b.relocalize?.());
+  applyStatic();
+  if (rerender) {
+    renderGridNote();
+    update({ refit: false, keepSelection: true });
+  }
+}
+function markLang() {
+  document.querySelectorAll('[data-lang]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.lang === getLang())));
+}
+document.querySelectorAll('[data-lang]').forEach((b) => b.addEventListener('click', () => {
+  if (b.dataset.lang !== getLang()) changeLang(b.dataset.lang);
+}));
+
 resize();
 const shared = loadShared();
+// 言語の優先順位: URL の ?lang → 共有URL内の言語 → 保存済み → 日本語
+const urlLang = new URLSearchParams(location.search).get('lang');
+setLang(isLang(urlLang) ? urlLang : isLang(shared?.l) ? shared.l : detectLang());
+markLang();
+applyStatic();
 if (shared) applyShared(shared); else addBox();
 update({ refit: true, keepSelection: !!shared });
 if (shared) restoreCamera(shared.c);
