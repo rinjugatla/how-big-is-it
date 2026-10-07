@@ -1,0 +1,31 @@
+// 比較対象。dims は [横(x), 高さ(y), 奥行(z)] を mm で表す。
+// size: s(小・手で持てる) | m(中・家電やカバン) | l(大・家具や人、車)
+// type: box | cylinder | sphere | human | car
+export const OBJECTS = [
+  { id: 'card', size: 's',    name: 'クレジットカード',     type: 'box',      dims: [85.6, 0.8, 54],     color: 0x3b6fd4 },
+  { id: 'aa', size: 's',      name: '単3電池',             type: 'cylinder', dims: [14.5, 50.5, 14.5],  color: 0xd9b100 },
+  { id: 'tabaco', size: 's',  name: 'たばこ（1箱）',        type: 'box',      dims: [56, 88, 22],        color: 0xc0392b },
+  { id: 'iphone', size: 's',  name: 'iPhone（寝かせ）',     type: 'box',      dims: [71.6, 7.8, 147.6],  color: 0x2c3e50 },
+  { id: 'can350', size: 's',  name: '缶ジュース 350ml',     type: 'cylinder', dims: [66, 122, 66],       color: 0x1abc9c },
+  { id: 'bunko', size: 's',   name: '文庫本',              type: 'box',      dims: [105, 14, 148],      color: 0xe67e22 },
+  { id: 'pet500', size: 's',  name: 'ペットボトル 500ml',   type: 'cylinder', dims: [65, 205, 65],       color: 0x5dade2 },
+  { id: 'tissue', size: 's',  name: 'ティッシュ箱',         type: 'box',      dims: [240, 60, 115],      color: 0xf5cba7 },
+  { id: 'ipad', size: 's',    name: 'iPad（寝かせ）',       type: 'box',      dims: [177.5, 5.3, 249.7], color: 0x95a5a6 },
+  { id: 'soccer', size: 's',  name: 'サッカーボール',       type: 'sphere',   dims: [220, 220, 220],     color: 0xecf0f1 },
+  { id: 'pet2l', size: 's',   name: 'ペットボトル 2L',      type: 'cylinder', dims: [100, 310, 100],     color: 0x48c9b0 },
+  { id: 'a4paper', size: 's', name: 'コピー用紙 500枚(A4)', type: 'box',      dims: [210, 50, 297],      color: 0xf8f9fa },
+  { id: 'laptop', size: 's',  name: 'ノートPC 14インチ',    type: 'box',      dims: [221, 16, 313],      color: 0x7f8c8d },
+  { id: 'rice', size: 'm',    name: '炊飯器',              type: 'box',      dims: [280, 220, 350],     color: 0xdfe6e9 },
+  { id: 'micro', size: 'm',   name: '電子レンジ',           type: 'box',      dims: [480, 290, 350],     color: 0xb2bec3 },
+  { id: 'suit', size: 'm',    name: 'スーツケース(M)',       type: 'box',      dims: [280, 650, 450],     color: 0x6c5ce7 },
+  { id: 'tatami', size: 'l',  name: '畳 1枚',              type: 'box',      dims: [880, 55, 1760],     color: 0xa9b665 },
+  { id: 'washer', size: 'm',  name: '洗濯機',              type: 'box',      dims: [595, 990, 600],     color: 0xdfe4ea },
+  { id: 'fridge', size: 'l',  name: '冷蔵庫（大型）',        type: 'box',      dims: [650, 1800, 700],    color: 0xcfd8dc },
+  { id: 'human', size: 'l',   name: '大人（身長170cm）',     type: 'human',    dims: [450, 1700, 250],    color: 0xf0b27a },
+  { id: 'door', size: 'l',    name: 'ドア',                type: 'box',      dims: [800, 2000, 40],     color: 0x8d6e63 },
+  { id: 'sofa', size: 'l',    name: '2人掛けソファ',         type: 'box',      dims: [1600, 850, 800],    color: 0x7b8fa1 },
+  { id: 'piano', size: 'l',   name: 'アップライトピアノ',     type: 'box',      dims: [1500, 1100, 600],   color: 0x2d3436 },
+  { id: 'bed', size: 'l',     name: 'ダブルベッド',          type: 'box',      dims: [1400, 350, 1950],   color: 0xd7ccc8 },
+  { id: 'kei', size: 'l',     name: '軽自動車',             type: 'car',      dims: [1475, 1650, 3395],  color: 0xe84393 },
+  { id: 'car', size: 'l',     name: '乗用車（カローラ級）',   type: 'car',      dims: [1745, 1460, 4495],  color: 0x0984e3 },
+];
